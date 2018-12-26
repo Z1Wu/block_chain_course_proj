@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import SimpleStorageContract from "./contracts/SimpleStorage.json";
+import LotteryContract from "./contracts/Lottery.json";
 import getWeb3 from "./utils/getWeb3";
 
 import "./App.css";
@@ -18,12 +18,11 @@ class App extends Component {
 
       // Get the contract instance.
       const networkId = await web3.eth.net.getId();
-      const deployedNetwork = SimpleStorageContract.networks[networkId];
+      const deployedNetwork = LotteryContract.networks[networkId];
       const instance = new web3.eth.Contract(
-        SimpleStorageContract.abi,
+        LotteryContract.abi,
         deployedNetwork && deployedNetwork.address,
       );
-
       // Set web3, accounts, and contract to the state, and then proceed with an
       // example of interacting with the contract's methods.
       // setState with callback here
@@ -39,16 +38,28 @@ class App extends Component {
 
   runExample = async () => {
     const { accounts, contract } = this.state;
+    console.log(accounts)
+    console.log("init successfully")
+    
+    let cur_account = accounts[0];
 
-    // Stores a given value, 5 by default.
-    // 
-    await contract.methods.set(5).send({ from: accounts[0] });
+    let manager = await contract.methods.trusted_manager().call();
 
-    // Get the value from the contract to prove it worked.
-    const response = await contract.methods.get().call();
+    if(cur_account === manager) {
+      console.log(cur_account)
+    } else {
+      console.log(cur_account, manager)
+    }
 
-    // Update state with the result.
-    this.setState({ storageValue: response });
+
+    try {
+      // await contract.methods.new_game().send({ from: accounts[0] });
+      // this function will be updated
+      let money = await contract.methods.money_for_charity().call();
+      console.log(money)
+    } catch (error) {
+      console.log(error)
+    }
   };
 
   render() {
