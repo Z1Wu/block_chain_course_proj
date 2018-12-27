@@ -13,7 +13,7 @@ contract Lottery {
         mapping(uint => Player) record;
     }
     
-    uint round_num;
+    uint public round_num;
 
     uint public jackpot;
     
@@ -25,17 +25,17 @@ contract Lottery {
     // 用于慈善的钱数
     uint public money_for_charity;
     
-    // 使用的
+    // 管理者的地址
     address payable public trusted_manager;
+    
+
+    // 确认当前是否有游戏正在进行
+    function hasGameRunning() public view returns(bool) {
+        return all_games[round_num].res == 0;
+    }
     
     // uint represent the amount of money people can get
     mapping(address => uint) public registered_people_in_need;
-    
-    // getter
-    function get_charity_money() public view returns(uint) {
-        return money_for_charity;
-    }
-
 
     modifier onlyByManager() {
         require(
@@ -44,7 +44,7 @@ contract Lottery {
         );
         _;
     }
-    
+
     modifier onlyByRegisteredPeople() {
         require(
             registered_people_in_need[msg.sender] > 0,
@@ -84,10 +84,10 @@ contract Lottery {
             round_num: round_num, 
             res: 1
         }));
-        
     }
     
     function new_game() public onlyByManager{
+        // 创建新游戏
         round_num = round_num + 1;
         all_games.push(Game({
             round_num: round_num, 
@@ -122,6 +122,7 @@ contract Lottery {
     function run_lottery(uint final_res) public 
         onlyByManager  
         onlyValidTicketNumber(final_res) {
+        // 开奖，猜对的人可以可以拿走所有的奖金。
         all_games[round_num].res = final_res;
         if(all_games[round_num].record[final_res].is_value == true) {
             address tmp = all_games[round_num].record[final_res].my_address;
@@ -144,6 +145,8 @@ contract Lottery {
         registered_people_in_need[new_people_in_need] = amount;    
     }
     
+
+    // 收到补助的人可以获取
     function get_relief(uint amount) public onlyByRegisteredPeople {
         require(registered_people_in_need[msg.sender] > amount, 
         " no enough deposit!");

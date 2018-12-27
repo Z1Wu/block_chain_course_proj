@@ -1,8 +1,15 @@
 <template>
   <div name = 'app'>
+    <!-- <p> {{ mode }}</p> -->
+    
     <!-- <HelloWorld/> -->
     <!-- <v-if " -->
-    <Manager/>
+    <Manager
+      :web3 = "web3"
+      :contract = "contract"
+      :account = "account" 
+      v-if = "mode === 'MANAGER' "/>
+    <Player v-if = "mode === 'PLAYER' "/>
   </div>
 </template>
 
@@ -11,8 +18,6 @@
 import LotteryContract from "./contracts/Lottery.json";
 import getWeb3 from "./utils/getWeb3.js";
 import Manager from "./components/Manager.vue"
-// import HelloWorld from "./components/HelloWorld.vue"
-
 
 export default {
   name: 'app',  
@@ -29,7 +34,6 @@ export default {
     Manager,
   },
   created: async function(){
-    console.log('abc')
       try {
       console.log("inside create hook")
       // Get network provider and web3 instance.
@@ -45,17 +49,15 @@ export default {
         LotteryContract.abi,
         deployedNetwork && deployedNetwork.address,
       );
-
       console.log(web3, accounts)
-
-      const manager = instance.methods.trusted_manager().call()
+      const manager = await instance.methods.trusted_manager().call()
       // init data filed
       this.account = accounts[0]
       this.contract = instance
       this.web3 = web3
 
       if(accounts[0] === manager) {
-        this.mode = "MANAGEG"
+        this.mode = "MANAGER"
       } else {
         this.mode = "PLAYER"
       }
