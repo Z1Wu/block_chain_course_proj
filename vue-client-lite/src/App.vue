@@ -1,20 +1,41 @@
 <template>
-  <div name="app">
-    <Manager :web3="web3" :contract="contract" :account="account" v-if="mode === 'MANAGER'"/>
-    <Player :web3="web3" :contract="contract" :account="account" v-if="mode === 'PLAYER'"/>
+  <div name="app" ma-0 pa-0>
+    <Manager
+      :web3="web3"
+      :contract="contract"
+      :account="account"
+      :jackpot="jackpot"
+      :running="running"
+      :round_num="round_num"
+      v-if="mode === 'MANAGER'"
+    />
+    <Player 
+      :web3="web3" 
+      :contract="contract" 
+      :account="account" 
+      @update_state="refresh"
+      v-if="mode === 'PLAYER'"/>
 
-    <!-- 添加游戏状态栏，as footer -->
-    <v-footer height="auto" color="primary lighten-1">
-      <v-layout justify-center row wrap>
-        <v-flex color="white" flat round>已经进行的游戏轮数： {{round_num}}</v-flex>
+    <Recipient 
+      :web3="web3" 
+      :contract="contract" 
+      :account="account" 
+      v-if="mode === 'RECEIPIENT'"
+      @update_state="refresh"/>
 
-        <v-flex color="white" flat round>游戏当前状态: {{running}}</v-flex>
+    <v-footer absolute color="cyan">
+      <v-btn cyan fab fixed bottom right :loading="refreshing" @click="refresh">
+        <v-icon>refresh</v-icon>
+      </v-btn>
+      <v-layout align-center justify-space-around wrap>
+        <v-spacer></v-spacer>
 
-        <v-flex color="white" flat round>当前奖池: {{jackpot}}</v-flex>
+        <v-flex flat round>已经进行的游戏轮数： {{round_num}}</v-flex>
 
-        <v-btn absolute dark fab bottom right color="pink" @click="refresh">
-          <v-icon>refresh</v-icon>
-        </v-btn>
+        <v-flex flat round>游戏当前状态: {{game_state}}</v-flex>
+
+        <v-flex flat round>当前奖池: {{jackpot}} wei</v-flex>
+        <v-spacer></v-spacer>
       </v-layout>
     </v-footer>
   </div>
@@ -25,6 +46,7 @@ import LotteryContract from "./contracts/Lottery.json";
 import getWeb3 from "./utils/getWeb3.js";
 import Manager from "./components/Manager.vue";
 import Player from "./components/Player.vue";
+import Recipient from "./components/Recipient.vue";
 
 export default {
   name: "app",
@@ -36,13 +58,22 @@ export default {
       account: null,
       running: false,
       round_num: "",
-      jackpot: ""
+      jackpot: "",
+
+      refreshing: false,
     };
   },
+  computed: {
+    game_state: function() {
+      return this.running ? "正在运行" : "无运行中游戏";
+    }
+  },
+
   components: {
     // HelloWorld,
     Manager,
-    Player
+    Player,
+    Recipient
   },
   created: async function() {
     try {
@@ -67,11 +98,22 @@ export default {
       this.contract = instance;
       this.web3 = web3;
 
+      const is_receipient =
+        (await instance.methods
+          .registered_people_in_need(this.account)
+          .call()) > 0;
+
+      console.log("is_receipient : ", is_receipient);
+
       if (accounts[0] === manager) {
         this.mode = "MANAGER";
+      } else if (is_receipient) {
+        this.mode = "RECEIPIENT";
       } else {
         this.mode = "PLAYER";
       }
+
+      await this.refresh();
     } catch (error) {
       // Catch any errors for any of the above operations.
       alert(
@@ -85,11 +127,14 @@ export default {
     refresh: async function() {
       // update all state from server
       // 更新当前游戏的轮数
-      this.update_round_num();
+      
+      this.refreshing = true
+      await this.update_round_num();
       // 更新游戏的状态
-      this.update_game_state();
+      await this.update_game_state();
       // 更新奖池
-      this.update_jackpot();
+      await this.update_jackpot();
+      this.refreshing = false
     },
 
     // 更新相关的状态
@@ -111,8 +156,20 @@ export default {
     update_jackpot: async function() {
       console.log("update [jackpot] from node...");
       this.jackpot = await this.contract.methods.jackpot().call();
+      // this.jackpot = web3.utils.fromWei
       console.log("update '[jackpot]' from node successfully!!!");
     }
   }
 };
 </script>
+
+<style scoped>
+#lateral .v-speed-dial,
+#lateral .v-btn--floating {
+  position: absolute;
+}
+#lateral .v-btn--floating {
+  margin: 0 0 16px 16px;
+}
+</style>
+

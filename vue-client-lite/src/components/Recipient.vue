@@ -1,74 +1,57 @@
 <template>
   <v-app id="inspire">
-    <v-btn absolute dark fab right color="pink" @click="refresh">
-        <v-icon>refresh</v-icon>
-    </v-btn>
-    <v-tabs centered color="cyan" dark icons-and-text>
-      <v-tabs-slider color="yellow"></v-tabs-slider>
-      <v-tab>正在运行的游戏
-        <v-icon>stars</v-icon>
-      </v-tab>
-      <v-tab>已经结束的游戏
-        <v-icon>face</v-icon>
-      </v-tab>
+    <v-card color="blue-grey darken-2" class="white--text">
+      <v-card-title primary-title>可获取的补助: {{money}}</v-card-title>
+    </v-card>
 
-      <v-tab-item>
-        <v-container text-xs-center wrap>
-          <v-layout align-space-around justify-center column fill-height>
-            <v-flex>
-              <p>ROUND NUMBER: {{round_num}}</p>
-            </v-flex>
-            <v-flex>
-              <p>JACKPOT NUMEBR: {{jackpot}}</p>
-            </v-flex>
-            <v-flex>
-              <v-btn :disabled="running" @click="new_game">NEW_GAME</v-btn>
-            </v-flex>
-            <v-flex>
-              <v-form ref="form" v-model="valid" lazy-validation>
-                <v-text-field v-model="winning_number" label="中奖号码" required></v-text-field>
-                <v-btn :disabled="!running && valid && !submitting" @click="submit">REVEAL</v-btn>
-              </v-form>
-            </v-flex>
-          </v-layout>
-        </v-container>
-      </v-tab-item>
-
-      <v-tab-item>
-        <v-container text-xs-center wrap>
-          <v-layout align-space-around justify-center column fill-height>
-            <v-form ref="new_rerecipient_form" v-model="address_valid" lazy-validation>
-                <v-text-field v-model="recipient_addr" label="受助者钱包地址" required></v-text-field>
-                <v-text-field v-model="recipient_num" label="受助金额" required></v-text-field>
-                <v-btn :disabled="rerecipient_valid" @click="submit">add</v-btn>
-              </v-form>
-          </v-layout>
-        </v-container>
-      </v-tab-item>
-    </v-tabs>
+    <v-container text-xs-center wrap>
+      <v-layout align-space-around justify-center column fill-height>
+        <v-form ref="draw_relief_form" v-model="amount_valid" lazy-validation>
+          <v-text-field v-model="drawing_amount" label="取出的金额" :rules="money_rule" required></v-text-field>
+          <v-btn
+            :disabled="drawing || !amount_valid"
+            :loading="drawing"
+            class="white--text"
+            color="purple darken-2"
+            @click="draw_relief"
+          >获取</v-btn>
+          <v-dialog v-model="drawing" hide-overlay persistent width="300">
+            <v-card color="primary" dark>
+              <v-card-text> 交易正在处理...
+                <v-progress-linear indeterminate color="white" class="mb-0"></v-progress-linear>
+              </v-card-text>
+            </v-card>
+          </v-dialog>
+        </v-form>
+      </v-layout>
+    </v-container>
   </v-app>
 </template>
 
 <script>
 export default {
   name: "Manager",
+
   props: ["web3", "contract", "account"],
+
   data() {
     return {
-      // 当前游戏的轮数
-      round_num: -1,
-      // 当前的奖池数目
-      jackpot: -1,
-      // 输入合法性
-      valid: false,
-      // 检测当前是否有游戏正在进行
-      running: false,
-      submitting: false,
-      // 当前游戏的结果
-      winning_number: "",
-      winning_number_rule: [
-        v => !!v || "Name is required",
-        v => /[0-9]+/.test(v) || "require number"
+      // 查询余额
+      querying: true,
+      // 取钱。。。
+      drawing: false,
+
+      // 当前余额
+      money: "",
+
+      // 需要提取出来金额
+      drawing_amount: "",
+      
+      // 输入金额的有效性
+      amount_valid: false,
+    
+      money_rule: [
+        v => /^[^0]+[0-9]*$/.test(v) || "金额必须是正数"
       ],
     };
   },
@@ -80,12 +63,43 @@ export default {
       this.account,
       this.contract
     );
-    this.round_num = await this.contract.methods.round_num().call();
-    console.log("current round number: ", this.round_num);
+
+    // get money from remote
+    this.update_relief();
   },
 
   methods: {
+    update_relief: async function() {
+      try {
+        console.log("query user relief ... ");
+        this.money = await this.contract.methods
+          .registered_people_in_need(this.account)
+          .call();
+        console.log("query done..", this.money);
+      } catch (error) {
+        console.log("fail to query", error);
+      }
+    },
+
+    draw_relief: async function() {
+      try {
+        if(this.drawing_amount > this.money) {
+          alert("余额不足")
+          return
+        }
+        this.drawing = true;
+        console.log("draw user relief ... ");
+        this.money = await this.contract.methods
+          .get_relief(this.drawing_amount)
+          .send({ from: this.account });
+
+      } catch (error) {
+        console.log(" ", error);
+      } finally {
+        this.drawing = false;
+        this.update_relief();
+      }
+    }
   }
-  
 };
 </script>
