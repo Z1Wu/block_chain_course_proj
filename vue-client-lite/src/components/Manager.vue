@@ -23,7 +23,6 @@
                     <div class="headline">{{game_state}}</div>
                   </div>
                 <v-spacer></v-spacer>
-
                 </v-card-title>
                 
                 <v-card-actions >
@@ -183,15 +182,16 @@ export default {
         try {
           this.submitting = true;
           let res = await this.contract.methods
-            .run_lottery(parseInt(this.winning_number))
+            .run_lottery(this.winning_number)
             .send({
               from: this.account
             });
-          this.submitting = false;
+          this.submitting = false
           this.$emit("update_state")
-          console.log(res);
+          console.log("run_lottery : ", res)
         } catch (error) {
           console.log(error);
+          this.submitting = false
         }
       }
     },

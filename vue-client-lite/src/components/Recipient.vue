@@ -49,7 +49,7 @@ export default {
       
       // 输入金额的有效性
       amount_valid: false,
-    
+
       money_rule: [
         v => /^[^0]+[0-9]*$/.test(v) || "金额必须是正数"
       ],

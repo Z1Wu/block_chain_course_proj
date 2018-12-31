@@ -41,7 +41,7 @@ git clone <仓库地址>
 geth 的安装可以去官网下载，在`geth-config`文件夹中含有对应的配置区块链的文件`genesis.json`。
 
 ``` shell
-geth init <your_gensisi.json> 
+geth init <your_genesis.json> 
 ```
 
 2. 使用私有链的在发现交易的时候自动交易的脚本, 仓库中有一个样例代码，可以在 `geth_config` 文件夹中找到 `auto-mining.js`。
@@ -84,20 +84,20 @@ metamask 可以在`chrom store` 中找到，直接安装即可。
 - 通过私钥导入用户，这个方法比较直观，直接把账户的私钥输入，之后就能通过 `metamask` 操作这个账户。
 - 通过 geth 中的 `keystore`文件导入，实际上我们可以看到，在使用这种方法的时候，会提示需要输入密码，这个密码就是在 geth 节点中使用 `personal.newAccount` 创建账户的时候使用的密码。
 
+![](.\imgs\import_account.png)
+
 在本地打开 keystore 中的 `utc-***.json`我们可以发现，实际上两种方法都是一样的，这个文件实际上使用了加密算法(aes) 。
 
- 
+ ![](./imgs/key_store.png)
 
 ### 本地搭建简单服务器运行前端代码
 
 ``` shell 
-
-# in directory of vue-client-lite, then run 
-
+# navigate to directory of vue-client-lite, then run the instruction blow 
 npm install && npm run serve
-
-
 ```
+
+然后通过浏览器打开 `localhost:8080` （开发服务器监听的端口）即可。
 
 ## 应用基本组成
 
@@ -133,16 +133,16 @@ npm install && npm run serve
 
 ### 受助者（Recipient）
 
-一个页面输入需要领取的金额数目，领取对应的金额
+一个页面输入需要领取的金额数目，领取对应的金额 =》getRecipient
 
 ## 测试
 
 ### 测试条件说明
 
 - 测试环境
-
-    - 使用 `geth` 搭建的私有链 + `metamask` 
-
+    - 运行在 `win10 ` + `chrome ` 
+    - 使用 `Geth/v1.7.3 ` 搭建的私有链 
+    - 使用 `metamask` 连接搭建的私有链
 - 测试用户
 
     - 一个`Manager` 用于创建游戏和管理福利资金（抽取游戏中的手续费）
@@ -153,19 +153,45 @@ npm install && npm run serve
 
 #### Manager 创建一个新的游戏
 
+- manager 开启一轮新的游戏
 
+  ![](imgs\m_create_new_game.png)
+
+- 区块链确认成功后
+
+  ![](imgs/m_done_create_new_game.png)
 
 #### Player1进行投注
 
+- 玩家1进行投注
+
+![](./imgs/player_1_betting.png)
+
+- 玩家1投注之后
+
 #### Player2进行投注
+
+- 玩家2进行投注
+
+  ![](imgs/player2_betting.png)
+
+- 投注区块链确认之后，当前奖池的金额发生变化
+
+  ![](imgs/player2_betted.png)
 
 #### Manager 执行 `Reveal` 进行开奖
 
+
+
+#### Player进行投注结果查询
+
+
+
 #### Manager 将就Recipient 添加到受助者名单中
 
+
+
 #### Recipient 领取救助金
-
-
 
 
 

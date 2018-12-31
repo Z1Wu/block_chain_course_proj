@@ -10,6 +10,7 @@ contract Lottery {
     struct Game {
         uint round_num;
         uint res;
+        // uint : ticket number
         mapping(uint => Player) record;
     }
     
@@ -22,6 +23,9 @@ contract Lottery {
     // 记录
     Game[] public all_games;
 
+    // draw rewards
+    mapping(address => uint) public reward_record;
+    
     // 用于慈善的钱数
     uint public money_for_charity;
     
@@ -30,7 +34,7 @@ contract Lottery {
     
 
     // 确认当前是否有游戏正在进行
-    function hasGameRunning() public view returns(bool) {
+    function hasGameRuunning() public view returns(bool) {
         return all_games[round_num].res == 0;
     }
     
@@ -44,7 +48,7 @@ contract Lottery {
         );
         _;
     }
-
+    
     modifier onlyByRegisteredPeople() {
         require(
             registered_people_in_need[msg.sender] > 0,
@@ -126,9 +130,11 @@ contract Lottery {
         all_games[round_num].res = final_res;
         if(all_games[round_num].record[final_res].is_value == true) {
             address tmp = all_games[round_num].record[final_res].my_address;
-            all_games[round_num].record[final_res].my_address.transfer(jackpot);
+            // all_games[round_num].record[final_res].my_address.transfer(jackpot);
+            reward_record[tmp] += jackpot; 
+            jackpot = 0;
             emit CongratulationToWinner(tmp, "winner take all");
-        }
+        }       
     }
 
 
@@ -143,6 +149,11 @@ contract Lottery {
             "not enough money");
         
         registered_people_in_need[new_people_in_need] = amount;    
+    }
+    
+    function withdraw_rewards() public {
+        require(reward_record[msg.sender] > 0, "no reward for you!!");
+        msg.sender.transfer(reward_record[msg.sender]);
     }
     
 

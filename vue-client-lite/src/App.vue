@@ -6,13 +6,17 @@
       :account="account"
       :jackpot="jackpot"
       :running="running"
+      @update_state="refresh"
       :round_num="round_num"
       v-if="mode === 'MANAGER'"
     />
     <Player 
       :web3="web3" 
       :contract="contract" 
-      :account="account" 
+      :account="account"
+      :running="running"
+      :jackpot="jackpot"
+      :round_num="round_num"
       @update_state="refresh"
       v-if="mode === 'PLAYER'"/>
 
@@ -20,8 +24,7 @@
       :web3="web3" 
       :contract="contract" 
       :account="account" 
-      v-if="mode === 'RECEIPIENT'"
-      @update_state="refresh"/>
+      v-if="mode === 'RECEIPIENT'"/>
 
     <v-footer absolute color="cyan">
       <v-btn cyan fab fixed bottom right :loading="refreshing" @click="refresh">

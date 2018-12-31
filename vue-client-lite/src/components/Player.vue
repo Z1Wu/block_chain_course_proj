@@ -6,7 +6,7 @@
         <v-icon>stars</v-icon>
       </v-tab>
       <v-tab>往期结果查询
-        <v-icon>face</v-icon>
+        <v-icon>search</v-icon>
       </v-tab>
 
       <v-tab-item>
@@ -20,9 +20,14 @@
                   :rules="winning_number_rule"
                   required
                 ></v-text-field>
-                <v-btn :disabled="betting || !winning_num_valid" @click="bet">BET</v-btn>
+                <v-btn
+                  :disabled="betting || !winning_num_valid || !running"
+                  :loading="betting"
+                  @click="bet"
+                >BET</v-btn>
               </v-form>
             </v-flex>
+
           </v-layout>
         </v-container>
       </v-tab-item>
@@ -37,22 +42,20 @@
                 :rules="round_number_rule"
                 required
               ></v-text-field>
-              <v-btn 
-              :disabled="!round_num_valid || searching" 
-              @click="get_game_result"
-              :loading="searching">search</v-btn>
+              <v-btn
+                :disabled="!round_num_valid || searching"
+                @click="get_game_result"
+                :loading="searching"
+              >search</v-btn>
             </v-form>
 
             <v-dialog v-model="show_search_res" hide-overlay persistent width="300">
               <v-card color="cyan">
-                <v-card-text> 
+                <v-card-text>
                   <!-- <v-progress-linear indeterminate color="white" class="mb-0"></v-progress-linear> -->
                   第 {{query_round_num}} 的开奖结果是 ； {{query_round_result}}
                 </v-card-text>
-                <v-btn depressed small
-                  @click="show_search_res = false; searching = false">
-                  close
-                </v-btn>
+                <v-btn depressed small @click="show_search_res = false; searching = false">close</v-btn>
               </v-card>
             </v-dialog>
           </v-layout>
@@ -68,6 +71,8 @@ export default {
   props: ["web3", "contract", "account", "running", "round_num", "jackpot"],
   data() {
     return {
+      // // alert
+      // betting_successful: true,
       // 输入合法性
       winning_num_valid: false,
       // 检测当前是否有游戏正在进行
@@ -112,22 +117,26 @@ export default {
           from: this.account,
           value: this.web3.utils.toWei("1", "ether")
         });
-        console.log("bet done", res);
-        // this.$emit()
+        // this.betting_successful = true
+        console.log("bet done", res)
+        this.$emit("update_state")
+        alert(
+            "投注第" + this.round_num + "期成功,投注的号码是" + this.winning_number
+        )
       } catch (error) {
         this.betting = false;
         console.log(error);
-        // alert("invalid betting, this ticket is taken by others")
+        alert("invalid betting, this ticket is taken by others")
       } finally {
         this.betting = false;
+        
       }
     },
 
     get_game_result: async function() {
       // return game res of specific round #
       try {
-        
-        this.searching = true
+        this.searching = true;
         console.log(
           "searching...",
           this.query_round_num,
@@ -137,7 +146,7 @@ export default {
           .all_games(this.query_round_num)
           .call();
         // this.searching = false
-        this.show_search_res = true
+        this.show_search_res = true;
         console.log(res);
         this.query_round_result = res.res;
         // pop up a dialog here
