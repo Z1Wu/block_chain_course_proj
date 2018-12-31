@@ -1,15 +1,52 @@
-# 区块链最终项目
+# 1. 区块链最终项目
 
-// todo 添加可以伸缩的 toc  
 
-```
+
 <details>
   <summary>目录</summary>
-  [TOC]
-</details>
-```
 
-## 项目结构
+<!-- TOC -->
+
+- [1. 区块链最终项目](#1-区块链最终项目)
+    - [1.1. 项目结构](#11-项目结构)
+    - [1.2. 如何运行](#12-如何运行)
+    - [1.3. 本地重新构建开发环境](#13-本地重新构建开发环境)
+        - [1.3.1. 从github 拉取仓库](#131-从github-拉取仓库)
+        - [1.3.2. 安装 truffle](#132-安装-truffle)
+        - [1.3.3. 配置私有链](#133-配置私有链)
+            - [1.3.3.1. 使用truffle development](#1331-使用truffle-development)
+            - [1.3.3.2. 使用ganache](#1332-使用ganache)
+            - [1.3.3.3. 使用geth构建私有链](#1333-使用geth构建私有链)
+        - [1.3.4. 修改 migrations文件内的内容](#134-修改-migrations文件内的内容)
+        - [1.3.5. 配置truffle-config.js](#135-配置truffle-configjs)
+        - [1.3.6. 部署合约到私有链上](#136-部署合约到私有链上)
+        - [1.3.7. 在浏览器安装 metamask](#137-在浏览器安装-metamask)
+        - [1.3.8. 配置 metamask](#138-配置-metamask)
+        - [1.3.9. 本地搭建简单服务器运行前端代码](#139-本地搭建简单服务器运行前端代码)
+    - [1.4. 应用基本组成](#14-应用基本组成)
+        - [1.4.1. 基本组件](#141-基本组件)
+        - [1.4.2. 管理者（Manager）](#142-管理者manager)
+        - [1.4.3. 参与者（Player）](#143-参与者player)
+        - [1.4.4. 受助者（Recipient）](#144-受助者recipient)
+    - [1.5. 测试](#15-测试)
+        - [1.5.1. 测试条件说明](#151-测试条件说明)
+        - [1.5.2. 测试过程：](#152-测试过程)
+            - [1.5.2.1. Manager 创建一个新的游戏](#1521-manager-创建一个新的游戏)
+            - [1.5.2.2. Player1进行投注](#1522-player1进行投注)
+            - [1.5.2.3. Player2进行投注](#1523-player2进行投注)
+            - [1.5.2.4. Manager 执行 `Reveal` 进行开奖](#1524-manager-执行-reveal-进行开奖)
+            - [1.5.2.5. Player进行投注结果查询](#1525-player进行投注结果查询)
+            - [1.5.2.6. 获奖的用户领取奖金](#1526-获奖的用户领取奖金)
+            - [1.5.2.7. Manager 将就Recipient 添加到受助者名单中](#1527-manager-将就recipient-添加到受助者名单中)
+            - [1.5.2.8. Recipient 领取救助金](#1528-recipient-领取救助金)
+    - [1.6. 缺陷与展望](#16-缺陷与展望)
+    - [1.7. 参考](#17-参考)
+
+<!-- /TOC -->
+
+</details>
+
+## 1.1. 项目结构
 
 - vue.js 作为前端框架
 - vuetify 作为前端的 css 框架
@@ -17,7 +54,7 @@
 - truffle 作为整体开发框架 
 - ganache 开发时的区块链 / geth  搭建私有链
 
-## 如何运行
+## 1.2. 如何运行
 
  以下是一种简单的运行方式（区块链环境有多种选择，下面介绍的只是一种比较方便的方案）
 
@@ -26,15 +63,15 @@
 3. 保持上一个控制台处于运行状态，重新打开一个终端，进入 vue-client-lite，使用 `npm install && npm run serve` 创建一个简单的服务器。
 4. 打开浏览器，配置 `metamask`  之后就可以在`8080`（默认）看到对应的页面。【具体操作见下面的介绍】
 
-## 本地重新构建开发环境
+## 1.3. 本地重新构建开发环境
 
-### 从github 拉取仓库
+### 1.3.1. 从github 拉取仓库
 
 ```shell
 git clone <本仓库地址>
 ```
 
-### 安装 truffle 
+### 1.3.2. 安装 truffle 
 
 [truffle官网]( https://truffleframework.com/docs)有详细的教程.
 
@@ -42,11 +79,11 @@ git clone <本仓库地址>
 npm -g install truffle@<version>
 ```
 
-### 配置私有链
+### 1.3.3. 配置私有链
 
 有以下几种方式可以构建私有链， 前两种方式都是直接在内存中模拟一条私有链，当你关闭重启之后所有的状态都会重置，主要使用于开发环境。
 
-#### 使用truffle development
+#### 1.3.3.1. 使用truffle development
 
 ```shell
 # 进入 truffle console, 会默认在 9545 端口开放一个 rpc 调用端口。  
@@ -55,7 +92,7 @@ truffle develop
 
 ![](imgs/truffle_sample.png)
 
-#### 使用ganache 
+#### 1.3.3.2. 使用ganache 
 
 这里直接使用从 truffle 官网下载的图形版，直接运行即可
 
@@ -63,7 +100,7 @@ truffle develop
 
 
 
-#### 使用geth构建私有链
+#### 1.3.3.3. 使用geth构建私有链
 
 1. 安装geth，初始化私有链
 
@@ -108,26 +145,26 @@ checkWork();
 ```
 
 
-### 修改 migrations文件内的内容
+### 1.3.4. 修改 migrations文件内的内容
 
 按照官方文档的解释，这个文件夹中的文件是用来将solidity 源代码部署到去对应的区块链上的代码，本项目只用到了最基本的部署，高级用法请看官网文档。
 
-### 配置truffle-config.js
+### 1.3.5. 配置truffle-config.js
 
 本项目只配置了简单的配置了网络，以及生成 build的文件的位置。
 
-### 部署合约到私有链上
+### 1.3.6. 部署合约到私有链上
 
 ``` shell
 # 没有使用 reset 的话可能会出现 out-of-gas, 原因暂时不明白
 truffle migrate --reset
 ```
 
-### 在浏览器安装 metamask  
+### 1.3.7. 在浏览器安装 metamask  
 
 metamask 可以在`chrom store` 中找到，直接安装即可。
 
-### 配置 metamask
+### 1.3.8. 配置 metamask
 
 在本地节点建立用户，之后将用户导入对应 metamask 中。
 
@@ -140,7 +177,7 @@ metamask 可以在`chrom store` 中找到，直接安装即可。
 
  ![](./imgs/key_store.png)
 
-### 本地搭建简单服务器运行前端代码
+### 1.3.9. 本地搭建简单服务器运行前端代码
 
 ``` shell 
 # navigate to directory of vue-client-lite, then run the instruction blow 
@@ -149,9 +186,9 @@ npm install && npm run serve
 
 然后通过浏览器打开 `localhost:8080` （开发服务器监听的端口）即可。
 
-## 应用基本组成
+## 1.4. 应用基本组成
 
-### 基本组件
+### 1.4.1. 基本组件
 
 - 状态栏
 
@@ -161,7 +198,7 @@ npm install && npm run serve
 
 - 刷新按钮 =》 点击之后可以更新状态栏的状态.
 
-### 管理者（Manager）
+### 1.4.2. 管理者（Manager）
 
 - 游戏管理
 
@@ -175,19 +212,19 @@ npm install && npm run serve
 
     - 查看当前可以领取的救助金的数额
 
-### 参与者（Player）
+### 1.4.3. 参与者（Player）
 
 - 输入金额进行投注 =》 bet
 - 查看往期的开奖情况 =》 search
 - 查看自己是否有奖金可以领取 =》 withdraw_reward 
 
-### 受助者（Recipient）
+### 1.4.4. 受助者（Recipient）
 
 需要领取的金额数目，领取对应的金额 =》getRecipient
 
-## 测试
+## 1.5. 测试
 
-### 测试条件说明
+### 1.5.1. 测试条件说明
 
 - 测试环境
     - 运行在 `win10 ` + `chrome ` 
@@ -199,9 +236,9 @@ npm install && npm run serve
     - 两个`Player`, 用于在管理者创建的游戏中进行投注。
     - 一个 `Recipient` ，由于领取分配的救助金。
 
-### 测试过程：
+### 1.5.2. 测试过程：
 
-#### Manager 创建一个新的游戏
+#### 1.5.2.1. Manager 创建一个新的游戏
 
 - manager 开启一轮新的游戏
 
@@ -211,7 +248,7 @@ npm install && npm run serve
 
   ![](imgs/m_done_create_new_game.png)
 
-#### Player1进行投注
+#### 1.5.2.2. Player1进行投注
 
 - 玩家1进行投注
 
@@ -221,7 +258,7 @@ npm install && npm run serve
 
   - 
 
-#### Player2进行投注
+#### 1.5.2.3. Player2进行投注
 
 - 玩家2进行投注
 
@@ -231,7 +268,7 @@ npm install && npm run serve
 
   ![](imgs/backup_p2_betted.png)
 
-#### Manager 执行 `Reveal` 进行开奖
+#### 1.5.2.4. Manager 执行 `Reveal` 进行开奖
 
 - 输入开奖的号码进行开奖
 
@@ -241,13 +278,13 @@ npm install && npm run serve
 
   ![](imgs/m_revealed.png)
 
-#### Player进行投注结果查询
+#### 1.5.2.5. Player进行投注结果查询
 
 - 输入查询的期号查询这一期的开奖结果
 
   ![](imgs/p2_search.png)
 
-#### 获奖的用户领取奖金
+#### 1.5.2.6. 获奖的用户领取奖金
 
 - 根据提示领取奖金
 
@@ -257,13 +294,13 @@ npm install && npm run serve
 
   ![](imgs/p2_withdraw_reward_done.png)
 
-#### Manager 将就Recipient 添加到受助者名单中
+#### 1.5.2.7. Manager 将就Recipient 添加到受助者名单中
 
 - 每次投注的时候都会抽取一部分的手续费用于慈善事业，输入受助者的地址和金额进行受助者的注册
 
   ![](imgs/m_add_recipient.png)
 
-#### Recipient 领取救助金
+#### 1.5.2.8. Recipient 领取救助金
 
 - 输入希望领取的救助金的数额，进行领取
 
@@ -273,7 +310,7 @@ npm install && npm run serve
 
   ![](imgs/r_get_relief_done.png)
 
-## 缺陷与展望
+## 1.6. 缺陷与展望
 
 - 开奖过程的优化，这里的开奖是基于第三方(manager)绝对可信的条件下，从本质来看，只是对现有的福利彩票的一个简单的"前端"模型，"后端"的开奖还是要依靠现实的摇号的随机机制。要实现区块链上的"随机数"生成，大概有以下
   - 随机数生成器来生成随机数，不过 seed 的获得是一大难题，采用区块 hash，或者其他和区块相关的数据作为种子，都会让这个随机数一定程度上被矿工所控制，导致随机性没有那么高。
@@ -282,7 +319,7 @@ npm install && npm run serve
 - 过于粗糙的UI设计，水平有限，前端写得比较暴力粗糙，有挺多不合规范的地方。
 
 
-## 参考
+## 1.7. 参考
 
 1. truffle 官方文档 : https://truffleframework.com/docs
 
