@@ -9,6 +9,10 @@
         <v-icon>search</v-icon>
       </v-tab>
 
+      <v-tab>领取奖金
+        <v-icon>attach_money</v-icon>
+      </v-tab>
+
       <v-tab-item>
         <v-container text-xs-center wrap>
           <v-layout align-space-around justify-center column fill-height>
@@ -27,7 +31,6 @@
                 >BET</v-btn>
               </v-form>
             </v-flex>
-
           </v-layout>
         </v-container>
       </v-tab-item>
@@ -55,9 +58,43 @@
                   <!-- <v-progress-linear indeterminate color="white" class="mb-0"></v-progress-linear> -->
                   第 {{query_round_num}} 的开奖结果是 ； {{query_round_result}}
                 </v-card-text>
-                <v-btn depressed small @click="show_search_res = false; searching = false">close</v-btn>
+                 
+                <v-btn depressed small color="cyan" @click="show_search_res = false; searching = false"> close</v-btn>
               </v-card>
             </v-dialog>
+          </v-layout>
+        </v-container>
+      </v-tab-item>
+
+      <v-tab-item>
+        <v-container text-xs-center wrap mt-5>
+          <v-layout align-center justify-center row fill-height>
+            <v-flex>
+              <v-card max-width>
+                <v-card-title primary-title>
+                  <v-spacer></v-spacer>
+                  <div>
+                    <div class="headline">{{reward_state}}</div>
+                  </div>
+                  <v-spacer></v-spacer>
+                </v-card-title>
+
+                <v-card-actions>
+                  <v-spacer></v-spacer>
+                  <v-btn
+                    large
+                    :loading="withdrawing"
+                    :disabled="reward_amount == 0 || withdrawing"
+                    color="blue-grey"
+                    class="white--text"
+                    @click="withdraw"
+                  >WITHDRAW
+                    <v-icon right dark>cloud_download</v-icon>
+                  </v-btn>
+                  <v-spacer></v-spacer>
+                </v-card-actions>
+              </v-card>
+            </v-flex>
           </v-layout>
         </v-container>
       </v-tab-item>
@@ -92,10 +129,14 @@ export default {
       ],
       round_number_rule: [
         v => !!v || "empty",
-        v => !!/^[0-9]*$/.test(v) || "require number"
+        v => !!/^[0-9]*$/.test(v) || "require number",
+        v => v <= this.round_num || "这一期还没开奖"
       ],
 
-      show_search_res: false
+      show_search_res: false,
+
+      withdrawing: false,
+      reward_amount: 0
     };
   },
 
@@ -106,6 +147,17 @@ export default {
       this.account,
       this.contract
     );
+    this.reward_amount = await this.contract.methods
+      .reward_record(this.account)
+      .call();
+  },
+
+  computed: {
+    reward_state: function() {
+      return this.reward_amount == 0
+        ? "没有未领取的奖金"
+        : "获取了" + this.reward_amount + "wei的奖金，请尽快领取";
+    }
   },
 
   methods: {
@@ -118,18 +170,20 @@ export default {
           value: this.web3.utils.toWei("1", "ether")
         });
         // this.betting_successful = true
-        console.log("bet done", res)
-        this.$emit("update_state")
+        console.log("bet done", res);
+        this.$emit("update_state");
         alert(
-            "投注第" + this.round_num + "期成功,投注的号码是" + this.winning_number
-        )
+          "投注第" +
+            this.round_num +
+            "期成功,投注的号码是" +
+            this.winning_number
+        );
       } catch (error) {
         this.betting = false;
         console.log(error);
-        alert("invalid betting, this ticket is taken by others")
+        alert("invalid betting, this ticket is taken by others");
       } finally {
         this.betting = false;
-        
       }
     },
 
@@ -145,13 +199,31 @@ export default {
         let res = await this.contract.methods
           .all_games(this.query_round_num)
           .call();
-        // this.searching = false
         this.show_search_res = true;
         console.log(res);
-        this.query_round_result = res.res;
+        this.query_round_result = res.res
         // pop up a dialog here
       } catch (error) {
         console.log(error);
+        // alert()
+      } finally {
+        this.searching = false
+      }
+    },
+
+    withdraw: async function() {
+      try {
+        this.withdrawing = true
+        let res = await this.contract.methods
+          .withdraw_rewards()
+          .send({ from: this.account })
+        this.reward_amount == 0
+        console.log("withdraw money successfully", res)
+      } catch (error) {
+        console.log(error)
+      } finally {
+        this.withdrawing = false
+        this.$emit("update_state")
       }
     }
   }

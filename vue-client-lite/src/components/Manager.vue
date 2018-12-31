@@ -127,7 +127,7 @@ export default {
         v => parseInt(v) > 0 || "number must bigger than zero"
       ],
       recipient_addr_rule: [
-        v => /^0x[0-9a-z]+$/.test(v) || "invalid format address"
+        v => /^0x[0-9a-zA-Z]+$/.test(v) || "invalid format address"
       ]
     };
   },
@@ -157,7 +157,7 @@ export default {
           alert("can't creating a new game");
           return;
         }
-        console.log("create a new game... ");
+        console.log("creating a new game... ");
         this.creating = true;
         let res = await this.contract.methods
           .new_game()
@@ -200,17 +200,18 @@ export default {
     add_new_recipient: async function() {
       if (this.$refs.new_recipient_form.validate()) {
         try {
-          this.adding = false;
+          this.adding = true;
           console.log("adding recipient...");
           let res = await this.contract.methods
             .add_or_update_amount(this.recipient_addr, this.recipient_num)
             .send({ from: this.account });
           console.log("add recipient successfully", res);
+          alert("添加成功")
           this.$emit("update_state")          
         } catch (error) {
           console.log("fail to add", error);
         } finally {
-          this.adding = true
+          this.adding = false
         }
       }
     },

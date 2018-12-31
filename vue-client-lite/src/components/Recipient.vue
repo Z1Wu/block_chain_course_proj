@@ -83,7 +83,7 @@ export default {
 
     draw_relief: async function() {
       try {
-        if(this.drawing_amount > this.money) {
+        if(parseInt(this.drawing_amount) > parseInt(this.money)) {
           alert("余额不足")
           return
         }

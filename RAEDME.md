@@ -1,38 +1,67 @@
-# WelfareLottry
+# 区块链最终项目
 
-// todo 添加可以伸缩的 toc 
+// todo 添加可以伸缩的 toc  
 
+```
+<details>
+  <summary>目录</summary>
+  [TOC]
+</details>
+```
 
+## 项目结构
 
-## 如何使用
+- vue.js 作为前端框架
+- vuetify 作为前端的 css 框架
+- web3 用于和智能合约交互
+- truffle 作为整体开发框架 
+- ganache 开发时的区块链 / geth  搭建私有链
 
-### 直接连上已经部署好合约的区块链(testnet)
+## 如何运行
 
-// todo 暂定采用  res testnet
+ 以下是一种简单的运行方式（区块链环境有多种选择，下面介绍的只是一种比较方便的方案）
+
+1. 打开 truffle  自带的内存中的区块链 ` truffle develop` 
+2. 在打开的控制台(truffle developement)中部署合约， `truffle migrate`
+3. 保持上一个控制台处于运行状态，重新打开一个终端，进入 vue-client-lite，使用 `npm install && npm run serve` 创建一个简单的服务器。
+4. 打开浏览器，配置 `metamask`  之后就可以在`8080`（默认）看到对应的页面。【具体操作见下面的介绍】
 
 ## 本地重新构建开发环境
 
 ### 从github 拉取仓库
 
 ```shell
-git clone <仓库地址>
+git clone <本仓库地址>
 ```
 
 ### 安装 truffle 
 
-[truffle官网]()有详细的教程
+[truffle官网]( https://truffleframework.com/docs)有详细的教程.
+
+```shell
+npm -g install truffle@<version>
+```
 
 ### 配置私有链
 
-有以下几种方式可以构建私有链
+有以下几种方式可以构建私有链， 前两种方式都是直接在内存中模拟一条私有链，当你关闭重启之后所有的状态都会重置，主要使用于开发环境。
 
 #### 使用truffle development
 
-// 详情查看官方文档
+```shell
+# 进入 truffle console, 会默认在 9545 端口开放一个 rpc 调用端口。  
+truffle develop
+```
+
+![](imgs/truffle_sample.png)
 
 #### 使用ganache 
 
-// 详情查看官方文档
+这里直接使用从 truffle 官网下载的图形版，直接运行即可
+
+![](imgs/ganache_sample.png)
+
+
 
 #### 使用geth构建私有链
 
@@ -46,7 +75,28 @@ geth init <your_genesis.json>
 
 2. 使用私有链的在发现交易的时候自动交易的脚本, 仓库中有一个样例代码，可以在 `geth_config` 文件夹中找到 `auto-mining.js`。
 
-3. 运行节点
+```javascript
+// mine when there is 
+var mining_threads = 4
+
+function checkWork() {
+    if (eth.getBlock("pending").transactions.length > 0) {
+        if (eth.mining) return;
+        console.log("== Pending transactions! Mining...");
+        miner.start(mining_threads);
+    } else {
+        miner.stop();
+        console.log("== No transactions! Mining stopped.");
+    }
+}
+
+eth.filter("latest", function(err, block) { checkWork(); });
+eth.filter("pending", function(err, block) { checkWork(); });
+
+checkWork();
+```
+
+2. 运行节点
 
 按照geth的文档，运行节点的，需要注意的在运行的时候打开对应的选项比如 `rpc` 和 `cors`， 具体可以参考 `run_geth.sh`。
 
@@ -109,7 +159,7 @@ npm install && npm run serve
     - 是否存在游戏进行
     - 当前奖池的数目
 
-- 刷新按钮 =》 点击之后可以更新状态栏的状态
+- 刷新按钮 =》 点击之后可以更新状态栏的状态.
 
 ### 管理者（Manager）
 
@@ -121,19 +171,19 @@ npm install && npm run serve
 
 - 添加新的受助者
 
-    - 增加/更新受助者以及其可以领取的金额
+    - 增加/更新受助者以及其可以领取的金额 =》add_or_update
 
     - 查看当前可以领取的救助金的数额
 
 ### 参与者（Player）
 
 - 输入金额进行投注 =》 bet
-
 - 查看往期的开奖情况 =》 search
+- 查看自己是否有奖金可以领取 =》 withdraw_reward 
 
 ### 受助者（Recipient）
 
-一个页面输入需要领取的金额数目，领取对应的金额 =》getRecipient
+需要领取的金额数目，领取对应的金额 =》getRecipient
 
 ## 测试
 
@@ -165,46 +215,80 @@ npm install && npm run serve
 
 - 玩家1进行投注
 
-![](./imgs/player_1_betting.png)
+  ![](./imgs/backup_p1_betting.png)
 
 - 玩家1投注之后
+
+  - 
 
 #### Player2进行投注
 
 - 玩家2进行投注
 
-  ![](imgs/player2_betting.png)
+  ![](imgs/backup_p2_betting.png)
 
 - 投注区块链确认之后，当前奖池的金额发生变化
 
-  ![](imgs/player2_betted.png)
+  ![](imgs/backup_p2_betted.png)
 
 #### Manager 执行 `Reveal` 进行开奖
 
+- 输入开奖的号码进行开奖
 
+  ![](imgs/m_revealing.png)
+
+- 开奖之后，当前游戏结束，如果有玩家中奖，会清空奖池。
+
+  ![](imgs/m_revealed.png)
 
 #### Player进行投注结果查询
 
+- 输入查询的期号查询这一期的开奖结果
 
+  ![](imgs/p2_search.png)
+
+#### 获奖的用户领取奖金
+
+- 根据提示领取奖金
+
+    ![](imgs/p2_withdraw_reward.png)
+
+- 每次领取都会取出所有的奖金发送到用户账户中
+
+  ![](imgs/p2_withdraw_reward_done.png)
 
 #### Manager 将就Recipient 添加到受助者名单中
 
+- 每次投注的时候都会抽取一部分的手续费用于慈善事业，输入受助者的地址和金额进行受助者的注册
 
+  ![](imgs/m_add_recipient.png)
 
 #### Recipient 领取救助金
 
+- 输入希望领取的救助金的数额，进行领取
 
+  ![](imgs/r_get_relief.png)
 
-## 缺陷
+- 获取之后，界面执行对应的更新
 
-- 开奖过程的优化(todo)。
+  ![](imgs/r_get_relief_done.png)
 
-- 过于粗糙的UI设计
+## 缺陷与展望
+
+- 开奖过程的优化，这里的开奖是基于第三方(manager)绝对可信的条件下，从本质来看，只是对现有的福利彩票的一个简单的"前端"模型，"后端"的开奖还是要依靠现实的摇号的随机机制。要实现区块链上的"随机数"生成，大概有以下
+  - 随机数生成器来生成随机数，不过 seed 的获得是一大难题，采用区块 hash，或者其他和区块相关的数据作为种子，都会让这个随机数一定程度上被矿工所控制，导致随机性没有那么高。
+    - 预言机 Oracle，提供"绝对"可行的第三方。
+  - 基于密码学的随机开奖过程，大致流程在参考中的2。
+- 过于粗糙的UI设计，水平有限，前端写得比较暴力粗糙，有挺多不合规范的地方。
 
 
 ## 参考
 
-- [truffle 官方文档]()
+1. truffle 官方文档 : https://truffleframework.com/docs
 
-- [如何实现真的随机数]
+2. 关于区块链随机数生成的探讨 : https://ethereum.stackexchange.com/questions/191/how-can-i-securely-generate-a-random-number-in-my-smart-contract
 
+3. 在出现交易的时候进行挖矿(auto minging) : https://ethereum.stackexchange.com/questions/3151/how-to-make-miner-to-mine-only-when-there-are-pending-transactions)
+
+4. vue.js : https://vuejs.org/
+5. UI framework vuetify:  https://vuetifyjs.com

@@ -108,7 +108,7 @@ export default {
 
       console.log("is_receipient : ", is_receipient);
 
-      if (accounts[0] === manager) {
+      if (this.account === manager) {
         this.mode = "MANAGER";
       } else if (is_receipient) {
         this.mode = "RECEIPIENT";

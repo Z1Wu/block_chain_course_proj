@@ -1,4 +1,4 @@
-pragma solidity ^0.5.0;
+    pragma solidity ^0.5.0;
 
 contract Lottery {
     
@@ -34,7 +34,7 @@ contract Lottery {
     
 
     // 确认当前是否有游戏正在进行
-    function hasGameRuunning() public view returns(bool) {
+    function hasGameRunning() public view returns(bool) {
         return all_games[round_num].res == 0;
     }
     
@@ -153,7 +153,10 @@ contract Lottery {
     
     function withdraw_rewards() public {
         require(reward_record[msg.sender] > 0, "no reward for you!!");
-        msg.sender.transfer(reward_record[msg.sender]);
+        // avoid attack
+        uint tmp = reward_record[msg.sender]; 
+        reward_record[msg.sender] = 0;
+        msg.sender.transfer(tmp);
     }
     
 
